@@ -1,0 +1,19 @@
+{
+  "description": "Example Multi-Account configuration for TikTok Auto Poster. Copy this file to accounts.json and modify.",
+  "accounts": {
+    "account_1": {
+      "username": "@demo_creator_1",
+      "email": "demo1@example.com",
+      "cookie_file": "cookies/account_1.json",
+      "enabled": true,
+      "tags": ["tech", "tips"]
+    },
+    "account_2": {
+      "username": "@demo_creator_2",
+      "email": "demo2@example.com",
+      "cookie_file": "cookies/account_2.json",
+      "enabled": true,
+      "tags": ["gaming", "entertainment"]
+    }
+  }
+}

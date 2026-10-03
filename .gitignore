@@ -1,0 +1,39 @@
+# Python cache & virtual environment
+__pycache__/
+*.py[cod]
+*$py.class
+*.env
+.venv/
+env/
+venv/
+ENV/
+
+# Sensitive Session Cookies & Credentials (CRITICAL: NEVER COMMIT)
+cookies/*.json
+!cookies/.gitkeep
+accounts.json
+!accounts.example.json
+
+# Media Files (avoid committing large video files)
+videos/**/*.mp4
+videos/**/*.mov
+videos/**/*.webm
+videos/**/*.avi
+videos/**/*.mkv
+videos_done/
+
+# Execution Results, Logs & Screenshots
+results/*.json
+results/screenshots/*.png
+results/used_captions.json
+!results/.gitkeep
+!results/screenshots/.gitkeep
+logs/*.log
+!logs/.gitkeep
+
+# Operating System & IDE metadata
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.swp
