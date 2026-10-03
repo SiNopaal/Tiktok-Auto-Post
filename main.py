@@ -18,8 +18,10 @@ if sys.platform == "win32":
     except Exception:
         pass
 
+from typing import Optional
 from config import (
     DEFAULT_INTERVAL_MINUTES,
+    INTERVAL_RANGE_MINUTES,
     INTER_ACCOUNT_DELAY,
     VIDEOS_DIR
 )
@@ -53,10 +55,11 @@ async def live_countdown_timer(total_seconds: int, next_cycle_num: int):
     """Menampilkan live countdown progress bar di terminal."""
     end_time = datetime.now() + timedelta(seconds=total_seconds)
     target_clock = end_time.strftime("%H:%M:%S")
+    delay_min = total_seconds // 60
 
-    print(f"\n{YELLOW}{BOLD}⏳ JEDA JADWAL SIKLUS AKTIF:{RESET}")
-    print(f"🎯 Jadwal Siklus #{next_cycle_num:02d} Berikutnya : {CYAN}{BOLD}{target_clock}{RESET}")
-    print(f"⏱️ Durasi Jeda             : {total_seconds // 60} Menit\n")
+    print(f"\n{YELLOW}{BOLD}⏳ JEDA JADWAL SIKLUS ACAK ({delay_min} MENIT) AKTIF:{RESET}")
+    print(f"🎯 Jadwal Siklus #{next_cycle_num:02d} Berikutnya : {CYAN}{BOLD}{target_clock}{RESET} WIB")
+    print(f"⏱️ Durasi Jeda             : {delay_min} Menit\n")
 
     remaining = total_seconds
     while remaining > 0:
@@ -79,14 +82,14 @@ async def live_countdown_timer(total_seconds: int, next_cycle_num: int):
     print(f"{GREEN}⏰ Waktu jeda selesai! Memulai siklus posting berikutnya...{RESET}\n")
 
 
-async def run_scheduled_posting(interval_minutes: int = DEFAULT_INTERVAL_MINUTES, headless: bool = False):
+async def run_scheduled_posting(interval_minutes: Optional[int] = None, headless: bool = False):
     """
     Menjalankan siklus posting otomatis:
     Dalam 1 siklus:
       1. Upload video untuk Akun 1
       2. Jeda singkat (20-35 detik)
       3. Upload video untuk Akun 2
-      4. Jeda jadwal interval (misal 45 menit) sebelum masuk ke siklus berikutnya.
+      4. Jeda jadwal acak (40-60 menit) sebelum masuk ke siklus berikutnya.
     """
     ensure_account_video_folders()
     rounds = prepare_cycle_batches()
@@ -100,14 +103,15 @@ async def run_scheduled_posting(interval_minutes: int = DEFAULT_INTERVAL_MINUTES
         print()
         return
 
-    interval_sec = interval_minutes * 60
     total_rounds = len(rounds)
     total_videos = sum(len(r["items"]) for r in rounds)
+
+    delay_info = f"{interval_minutes} Menit (Tetap)" if interval_minutes else f"Random {INTERVAL_RANGE_MINUTES[0]} - {INTERVAL_RANGE_MINUTES[1]} Menit"
 
     print(f"\n{CYAN}{BOLD}📋 STRUKTUR SIKLUS POSTING (Wave Cycles):{RESET}")
     print("=" * 70)
     print(f"📊 Total Video   : {BOLD}{total_videos} Video{RESET} ({total_rounds} Siklus)")
-    print(f"⏱️ Delay Siklus  : {BOLD}{interval_minutes} Menit{RESET} setelah semua akun selesai di satu ronde.")
+    print(f"⏱️ Delay Siklus  : {BOLD}{delay_info}{RESET} setelah semua akun selesai di satu ronde.")
     print("=" * 70)
     for r in rounds:
         acc_str = ", ".join([f"{it['account_id']} ({it['filename']})" for it in r["items"]])
@@ -151,7 +155,15 @@ async def run_scheduled_posting(interval_minutes: int = DEFAULT_INTERVAL_MINUTES
         # Setelah seluruh akun di siklus ini selesai -> jeda interval sebelum siklus berikutnya
         if r_idx < total_rounds:
             print(f"\n{GREEN}✓ SIKLUS #{round_num:02d} SELESAI UNTUK SEMUA AKUN!{RESET}")
-            await live_countdown_timer(interval_sec, next_cycle_num=round_num + 1)
+            
+            # Hitung jeda acak 40-60 menit atau interval kustom
+            if interval_minutes:
+                chosen_delay_min = interval_minutes
+            else:
+                chosen_delay_min = random.randint(INTERVAL_RANGE_MINUTES[0], INTERVAL_RANGE_MINUTES[1])
+
+            delay_sec = chosen_delay_min * 60
+            await live_countdown_timer(delay_sec, next_cycle_num=round_num + 1)
 
     print(f"\n{GREEN}{BOLD}🎉 SELURUH SIKLUS POSTING TELAH SELESAI! SEMUA VIDEO TELAH DIPOSTING. 🚀{RESET}\n")
 
@@ -164,7 +176,7 @@ def main():
     parser.add_argument("--account", type=str, default="account_1", help="ID Akun untuk mode single (default: account_1)")
     parser.add_argument("--video", type=str, default=None, help="Path video MP4 untuk mode single")
     parser.add_argument("--caption", type=str, default=None, help="Custom caption untuk mode single")
-    parser.add_argument("--interval", type=int, default=DEFAULT_INTERVAL_MINUTES, help="Jeda antar siklus dalam menit (default: 45)")
+    parser.add_argument("--interval", type=int, default=None, help="Jeda tetap antar siklus dalam menit (default: acak 40-60 menit)")
     parser.add_argument("--headless", action="store_true", help="Jalankan browser di background tanpa GUI")
     parser.add_argument("--list", action="store_true", help="Tampilkan daftar akun terdaftar")
     parser.add_argument("--status", action="store_true", help="Tampilkan status antrean video")
