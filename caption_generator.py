@@ -118,8 +118,59 @@ TEMPLATES: Dict[str, Dict[str, List[str]]] = {
             "#racuntiktok", "#reviewproduk", "#unboxing", "#affiliate", "#rekomendasi",
             "#haul", "#belanjaonline", "#tiktokshop"
         ]
+    },
+    "anomaly": {
+        "hooks": [
+            "Perhatikan baik-baik rekaman ini... 😨",
+            "Bulu kuduk langsung merinding liat ini 😱",
+            "Gak sengaja ketangkep kamera... 👁️",
+            "Ada yang aneh di detik-detik ini ⚠️",
+            "Coba liat lebih teliti di bagian itu... 👀",
+            "Rekaman janggal yang bikin gak bisa tidur 🥶",
+            "Kamera menangkap sesuatu yang gak beres 🎥⚡",
+            "Ini beneran kejadian nyata atau apa? 😨",
+            "Detik-detik momen ganjil terekam jelas 🛑",
+            "Jangan ditonton sendirian kalau penakut... 🤫",
+            "Terekam tanpa sengaja dan bikin merinding 📹",
+            "Ada yang bisa jelasin hal aneh ini? 🧩",
+            "Sumpah ini bikin merinding sebadan-badan 😱",
+            "Fenomena ganjil yang belum ada penjelasannya 🛸"
+        ],
+        "bodies": [
+            "Kejadian ini terekam jelas dan belum ada penjelasan ilmiahnya.",
+            "Banyak yang bilang ini anomali nyata, tapi ada juga yang ragu.",
+            "Perhatikan bayangan dan gerakan tak wajar di video ini.",
+        ],
+        "ctas": [
+            "Menurut kalian ini editan, glitch, atau asli? 🤔",
+            "Ada yang bisa jelasin fenomena ini di komen? 👇",
+            "Kalian pernah ngalamin hal janggal kayak gini? 💬",
+            "Tulis teori kalian di kolom komentar ya! 👇",
+            "Kalau kalian ada di posisi itu, bakal ngapain? 🏃💨"
+        ],
+        "tags": [
+            "#anomali", "#misteri", "#creepy", "#horortok", "#cctv",
+            "#penampakan", "#scary", "#glitchinthematrix", "#anehtapinyata",
+            "#viral", "#fyp", "#trending"
+        ]
     }
 }
+
+
+def clean_filename_to_title(filename_or_path: str) -> str:
+    """Mengubah nama file video menjadi judul topik anomali alami."""
+    import re
+    from pathlib import Path
+    raw_name = Path(filename_or_path).stem
+    cleaned = re.sub(r'^(SnapInsta\.to_|tiktok_|VID_|video_|yt_|ig_)', '', raw_name, flags=re.IGNORECASE)
+    cleaned = re.sub(r'[_\-\s]+[0-9a-fA-F]{10,}.*$', '', cleaned)
+    cleaned = re.sub(r'[_\-\s]*\([0-9]+\)$', '', cleaned)
+    cleaned = re.sub(r'[_+\-]+', ' ', cleaned).strip()
+    words = [w for w in cleaned.split() if not w.isnumeric() and len(w) > 1]
+    if len(words) < 1 or len(cleaned) < 3:
+        return "Fenomena Anomali Tak Terduga"
+    title = " ".join(words).title()
+    return title[:57].rsplit(' ', 1)[0] + "..." if len(title) > 60 else title
 
 
 def load_used_captions() -> set:
@@ -145,30 +196,37 @@ def save_used_caption(caption_text: str):
         json.dump({"hashes": sorted(list(hashes))}, f, indent=2)
 
 
-def generate_unique_caption(theme: Optional[str] = None, max_attempts: int = 100) -> str:
+def generate_unique_caption(video_filename_or_path: Optional[str] = None, theme: Optional[str] = None, max_attempts: int = 100) -> str:
     """
-    Menghasilkan caption yang 100% unik berdasarkan tema yang dipilih.
+    Menghasilkan caption yang 100% unik berdasarkan tema atau nama file video.
     Memanfaatkan SHA-256 deduplication untuk menjamin tidak ada duplikasi.
     """
     active_theme = theme if theme in TEMPLATES else CAPTION_THEME
     if active_theme not in TEMPLATES:
-        active_theme = "general"
+        active_theme = "anomaly"
 
     pool = TEMPLATES[active_theme]
     used_hashes = load_used_captions()
 
+    # Jika tema anomaly dan ada file video, gunakan nama file sebagai topik
+    custom_topic = None
+    if video_filename_or_path and active_theme == "anomaly":
+        custom_topic = clean_filename_to_title(video_filename_or_path)
+
     for _ in range(max_attempts):
         hook = random.choice(pool["hooks"])
-        body = random.choice(pool["bodies"])
+        body = f"Kejadian: {custom_topic}." if custom_topic else random.choice(pool["bodies"])
         cta = random.choice(pool["ctas"])
 
         # Pilih 3-5 hashtag secara acak
-        tag_count = random.randint(3, 5)
+        tag_count = random.randint(4, 5)
         selected_tags = random.sample(pool["tags"], min(tag_count, len(pool["tags"])))
+        if "#fyp" not in selected_tags:
+            selected_tags[-1] = "#fyp"
         tags_str = " ".join(selected_tags)
 
         # Susun caption
-        caption = f"{hook}\n\n{body}\n\n{cta}\n\n{tags_str}"
+        caption = f"{hook}\n{body}\n\n{cta}\n\n{tags_str}"
         c_hash = hashlib.sha256(caption.strip().encode("utf-8")).hexdigest()
 
         if c_hash not in used_hashes:
@@ -176,8 +234,8 @@ def generate_unique_caption(theme: Optional[str] = None, max_attempts: int = 100
             return caption
 
     # Fallback dengan timestamp unik jika pool terlampau sering digunakan
-    fallback_id = random.randint(1000, 9999)
-    caption = f"{hook}\n\n{body} (ID: #{fallback_id})\n\n{cta}\n\n{tags_str}"
+    fallback_id = random.randint(100, 999)
+    caption = f"{hook}\n{body} (#{fallback_id})\n\n{cta}\n\n{tags_str}"
     save_used_caption(caption)
     return caption
 

@@ -60,6 +60,6 @@ INTER_ACCOUNT_DELAY = (20, 35)  # Natural human pause between accounts in second
 MOVE_AFTER_POST = True  # Automatically move completed videos to videos_done/
 
 # Caption Themes & Placeholders
-CAPTION_THEME = os.getenv("CAPTION_THEME", "general")
+CAPTION_THEME = os.getenv("CAPTION_THEME", "anomaly")
 TOKEN_OR_PRODUCT_NAME = os.getenv("TOKEN_OR_PRODUCT_NAME", "$DEMO")
 CONTRACT_ADDRESS_OR_LINK = os.getenv("CONTRACT_ADDRESS_OR_LINK", "https://example.com/item")

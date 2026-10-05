@@ -122,7 +122,7 @@ def prepare_cycle_batches() -> List[Dict[str, Any]]:
             vids = clean_queues.get(acc, [])
             if step < len(vids):
                 vid = vids[step]
-                caption = generate_unique_caption()
+                caption = generate_unique_caption(vid.name)
                 round_items.append({
                     "video_path": vid,
                     "filename": vid.name,
