@@ -157,8 +157,45 @@ TEMPLATES: Dict[str, Dict[str, List[str]]] = {
 }
 
 
+PHRASE_TRANSLATIONS = [
+    (r"\bglitch in the matrix\b", "glitch dunia nyata"),
+    (r"\bcaught on camera\b", "terekam kamera"),
+    (r"\bsecurity camera\b", "kamera CCTV"),
+    (r"\bcctv footage\b", "rekaman CCTV"),
+    (r"\bshadow figure\b", "sosok bayangan"),
+    (r"\bstrange creature\b", "makhluk misterius"),
+    (r"\bunexplained light\b", "cahaya misterius"),
+    (r"\bcreepy doll\b", "boneka menyeramkan"),
+    (r"\babandoned house\b", "rumah terbengkalai"),
+    (r"\babandoned hospital\b", "rumah sakit terbengkalai"),
+    (r"\bmoving on its own\b", "bergerak sendiri"),
+    (r"\bopening on its own\b", "terbuka sendiri"),
+    (r"\bat 3am\b", "jam 3 pagi"),
+    (r"\bat night\b", "di malam hari"),
+    (r"\bin the woods\b", "di dalam hutan"),
+    (r"\bin the sky\b", "di langit"),
+    (r"\bblack figure\b", "sosok hitam"),
+    (r"\bwhite figure\b", "sosok putih")
+]
+
+WORD_TRANSLATIONS = {
+    "shadow": "bayangan", "figure": "sosok", "creature": "makhluk", "monster": "monster",
+    "ghost": "hantu", "spirit": "arwah", "alien": "alien", "ufo": "UFO", "entity": "entitas",
+    "whisper": "bisikan", "screaming": "jeritan", "doll": "boneka", "forest": "hutan",
+    "woods": "hutan", "lake": "danau", "ocean": "laut", "hospital": "rumah sakit",
+    "hotel": "hotel", "cemetery": "pemakaman", "house": "rumah", "room": "kamar",
+    "basement": "bawah tanah", "hallway": "lorong", "stairs": "tangga", "elevator": "lift",
+    "mirror": "cermin", "door": "pintu", "cctv": "CCTV", "camera": "kamera",
+    "footage": "rekaman", "glitch": "glitch", "anomaly": "anomali", "creepy": "menyeramkan",
+    "scary": "menakutkan", "haunted": "berhantu", "strange": "aneh", "weird": "janggal",
+    "flying": "terbang", "floating": "melayang", "running": "berlari", "standing": "berdiri",
+    "night": "malam", "sky": "langit", "road": "jalanan", "car": "mobil", "in": "di",
+    "at": "di", "on": "di", "behind": "di balik", "under": "di bawah"
+}
+
+
 def clean_filename_to_title(filename_or_path: str) -> str:
-    """Mengubah nama file video menjadi judul topik anomali alami."""
+    """Mengubah nama file video (Inggris atau Indonesia) menjadi judul topik anomali alami."""
     import re
     from pathlib import Path
     raw_name = Path(filename_or_path).stem
@@ -169,7 +206,28 @@ def clean_filename_to_title(filename_or_path: str) -> str:
     words = [w for w in cleaned.split() if not w.isnumeric() and len(w) > 1]
     if len(words) < 1 or len(cleaned) < 3:
         return "Fenomena Anomali Tak Terduga"
-    title = " ".join(words).title()
+
+    # Terjemahkan frasa dan kata bahasa Inggris jika ada
+    text = " ".join(words).lower()
+    for pattern, rep in PHRASE_TRANSLATIONS:
+        text = re.sub(pattern, rep, text, flags=re.IGNORECASE)
+    
+    translated_words = []
+    for w in text.split():
+        clean_w = re.sub(r'[^a-zA-Z0-9]', '', w)
+        translated_words.append(WORD_TRANSLATIONS.get(clean_w, w))
+
+    lowercase_particles = {"di", "ke", "dari", "dan", "yang", "pada"}
+    formatted_words = []
+    for i, w in enumerate(translated_words):
+        if w.upper() in ["CCTV", "UFO", "POV", "AI"]:
+            formatted_words.append(w.upper())
+        elif i > 0 and w.lower() in lowercase_particles:
+            formatted_words.append(w.lower())
+        else:
+            formatted_words.append(w.capitalize())
+
+    title = " ".join(formatted_words)
     return title[:57].rsplit(' ', 1)[0] + "..." if len(title) > 60 else title
 
 

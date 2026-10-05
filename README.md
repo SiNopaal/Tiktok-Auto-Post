@@ -12,7 +12,7 @@
 ## 🌟 Fitur Utama
 
 - 🔄 **Multi-Account Wave Cycles (Siklus Bergantian):**
-  Mengunggah 1 video untuk Akun 1, jeda sejenak (20-35 detik), lalu 1 video untuk Akun 2, diikuti jeda interval terjadwal yang **acak (Random 40 - 60 Menit)** sebelum memulai siklus berikutnya. Variasi jeda acak ini sangat natural dan aman dari deteksi spam platform.
+  Mengunggah 1 video untuk Akun 1, jeda sejenak (20-35 detik), lalu 1 video untuk Akun 2, diikuti jeda interval terjadwal yang **acak (Random 20 - 30 Menit)** sebelum memulai siklus berikutnya. Variasi jeda acak ini sangat natural dan aman dari deteksi spam platform.
 - 🛡️ **Playwright Stealth & Real Chrome Channel:**
   Menggunakan Google Chrome sistem dan patch stealth anti-deteksi otomatis, meminimalkan resiko *shadowban* atau pemblokiran bot.
 - 🔐 **Human-Assisted Interactive Login:**
@@ -139,7 +139,7 @@ python main.py --status
 ## 🎯 Langkah 3: Menjalankan Bot Posting
 
 ### 1. Menjalankan Semua Siklus Posting (Mode Terjadwal Penuh)
-Pola kerja: Upload Akun 1 ➔ Jeda ~30 detik ➔ Upload Akun 2 ➔ **Jeda Acak (Random 40 - 60 Menit)** ➔ Lanjut Siklus berikutnya sampai seluruh video habis:
+Pola kerja: Upload Akun 1 ➔ Jeda ~30 detik ➔ Upload Akun 2 ➔ **Jeda Acak (Random 20 - 30 Menit)** ➔ Lanjut Siklus berikutnya sampai seluruh video habis:
 ```bash
 python main.py --post-all
 ```
@@ -149,9 +149,9 @@ Jika ingin berjalan di background tanpa membuka jendela browser visual:
 python main.py --post-all --headless
 ```
 
-Mengubah ke interval tetap tertentu (misalnya tetap 30 menit, bukan acak):
+Mengubah ke interval tetap tertentu (misalnya tetap 15 menit, bukan acak):
 ```bash
-python main.py --post-all --interval 30
+python main.py --post-all --interval 15
 ```
 
 ### 2. Mode Posting Satu Video Langsung (Single Post)
